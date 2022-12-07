@@ -4,40 +4,49 @@ ROOT = "/"
 file_system = {}
 
 
-# Creates a new directory at the given path, then returns the new path to that directory
-def create_directory(new_directory: str, path: list) -> list:
-    pointer = file_system
-    for directory in path:
-        pointer = pointer[directory]
-    pointer[new_directory] = {}
-    path.append(new_directory)
-    return path
+# Returns the directory dict for the given path
+def get_directory(directory_path: list) -> dict:
+    directory = file_system  # Start at the root
+    for sub_directory in directory_path:  # Iterate over sub dirs, down to the last dir
+        directory = directory[sub_directory]
+    return directory
 
 
-# Adds a new file inside the directory at the given path
+# Creates a new directory at the given path, then returns the new path to the inside of that directory
+def create_new_directory(new_directory: str, directory_path: list) -> list:
+    parent_directory = get_directory(directory_path)  # Get where this directory will be located
+    parent_directory[new_directory] = {}  # Add new empty directory to the parent directory
+    directory_path.append(new_directory)  # Update the path
+    return directory_path  # Return the new path, which now points inside the newly created directory
+
+
+# Adds a new file to the directory at the given path
 def add_file(file: list, directory_path: list) -> None:
-    pointer = file_system
-    for directory in directory_path:
-        pointer = pointer[directory]
-    pointer[file[1]] = int(file[0])
+    file_size = int(file[0])
+    file_name = file[1]
+    directory = get_directory(directory_path)
+    directory[file_name] = file_size
 
 
-# Traverses the file system via the commands in the puzzle input, and builds the file_system dictionary as it does so
+# Traverses the file system via the commands in the puzzle input.
+# Builds the file_system dict as it traverses the file system.
 def create_file_system() -> None:
     current_path = []
     with open("day7input.txt", "r") as file:
         line = file.readline()
         while line != "":
-            if line.startswith("$"):
+            if not line.startswith("$"):
+                line = file.readline()
+            else:
                 command = line.strip("\n").strip("$ ").split(" ")
                 if command[0] == "cd":
-                    directory = command[1]
-                    if directory == ".." and current_path:
+                    new_directory = command[1]
+                    if new_directory == ".." and current_path:
                         current_path.pop()
-                    elif directory == ROOT:
+                    elif new_directory == ROOT:
                         current_path = []
                     else:
-                        current_path = create_directory(directory, current_path)
+                        current_path = create_new_directory(new_directory, current_path)
                     line = file.readline()
                 elif command[0] == "ls":
                     line = file.readline()
@@ -46,14 +55,13 @@ def create_file_system() -> None:
                             child_file = line.strip("\n").split(" ")
                             add_file(child_file, current_path)
                         line = file.readline()
-            else:
-                line = file.readline()
 
 
 create_file_system()
 print(json.dumps(file_system, indent=4))
 
 
+# Returns the sum of file sizes (direct or indirect) for the given directory dict
 def get_directory_size(directory: dict) -> int:
     size = 0
     for child in directory.values():
@@ -64,6 +72,7 @@ def get_directory_size(directory: dict) -> int:
     return size
 
 
+# Returns our puzzle answer
 def get_total_directory_sizes(directory: dict):
     total = 0
     for child in directory.values():
