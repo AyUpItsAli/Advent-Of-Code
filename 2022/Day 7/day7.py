@@ -59,6 +59,7 @@ def create_file_system() -> None:
 
 create_file_system()
 print(json.dumps(file_system, indent=4))
+print("File system above ^^^")
 
 
 # Returns the sum of file sizes (direct or indirect) for the given directory dict
@@ -72,17 +73,43 @@ def get_directory_size(directory: dict) -> int:
     return size
 
 
-# Returns our puzzle answer
+# Returns the sum of directory sizes up to 100,000
 def get_total_directory_sizes(directory: dict):
     total = 0
     for child in directory.values():
         if isinstance(child, dict):
             size = get_directory_size(child)
-            if size <= 100000:
+            if size <= 100_000:
                 total += size
             total += get_total_directory_sizes(child)
     return total
 
 
 # Part 1
-print(get_total_directory_sizes(file_system))
+print("Part 1: {}".format(get_total_directory_sizes(file_system)))
+
+# Part 2
+DISK_SPACE = 70_000_000
+REQUIRED_SPACE = 30_000_000
+
+used_space = get_directory_size(file_system)
+free_space = DISK_SPACE - used_space
+
+
+# Returns a list of directory sizes that, when deleted, would free up enough space to run the update
+def get_sufficient_directory_sizes(directory: dict):
+    sufficient_sizes = []
+    for child in directory.values():
+        if isinstance(child, dict):
+            size = get_directory_size(child)
+            if size + free_space >= REQUIRED_SPACE:
+                sufficient_sizes.append(size)
+            sufficient_sizes.extend(get_sufficient_directory_sizes(child))
+    return sufficient_sizes
+
+
+# Begin with the size of the whole file system, in case we have to remove everything to run the update
+sufficient_sizes = [used_space]
+sufficient_sizes.extend(get_sufficient_directory_sizes(file_system))  # Extend with any other sufficient sizes
+sufficient_sizes.sort()  # Sort sizes (smallest to biggest)
+print("Part 2: {}".format(sufficient_sizes[0]))  # Print smallest
