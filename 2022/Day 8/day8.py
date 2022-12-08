@@ -56,35 +56,39 @@ def is_out_of_bounds(x: int, y: int) -> bool:
 
 def get_scenic_score(tree: int, x: int, y: int) -> int:
     distance_left = 0
-    for x_offset in range(-x, 0):
+    for x_offset in range(-1, -x-1, -1):
+        if is_out_of_bounds(x + x_offset, y):
+            break
+        distance_left += 1
         neighbour = grid[y][x + x_offset]
-        if not is_out_of_bounds(x + x_offset, y):
-            distance_left += 1
-        if is_edge(x + x_offset, y) or neighbour >= tree:
+        if neighbour >= tree:
             break
 
     distance_right = 0
-    for x_offset in range(1, grid_width-x):
+    for x_offset in range(1, grid_width - x):
+        if is_out_of_bounds(x + x_offset, y):
+            break
+        distance_right += 1
         neighbour = grid[y][x + x_offset]
-        if not is_out_of_bounds(x + x_offset, y):
-            distance_right += 1
-        if is_edge(x + x_offset, y) or neighbour >= tree:
+        if neighbour >= tree:
             break
 
     distance_up = 0
-    for y_offset in range(-y, 0):
+    for y_offset in range(-1, -y-1, -1):
+        if is_out_of_bounds(x, y + y_offset):
+            break
+        distance_up += 1
         neighbour = grid[y + y_offset][x]
-        if not is_out_of_bounds(x, y + y_offset):
-            distance_up += 1
-        if is_edge(x, y + y_offset) or neighbour >= tree:
+        if neighbour >= tree:
             break
 
     distance_down = 0
     for y_offset in range(1, grid_height - y):
+        if is_out_of_bounds(x, y + y_offset):
+            break
+        distance_down += 1
         neighbour = grid[y + y_offset][x]
-        if not is_out_of_bounds(x, y + y_offset):
-            distance_down += 1
-        if is_edge(x, y + y_offset) or neighbour >= tree:
+        if neighbour >= tree:
             break
 
     return distance_left * distance_right * distance_up * distance_down
