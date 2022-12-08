@@ -50,6 +50,47 @@ def is_visible(tree: int, x: int, y: int) -> bool:
     return visible_left or visible_right or visible_up or visible_down
 
 
+def is_out_of_bounds(x: int, y: int) -> bool:
+    return x < 0 or y < 0 or x >= grid_width or y >= grid_height
+
+
+def get_scenic_score(tree: int, x: int, y: int) -> int:
+    distance_left = 0
+    for x_offset in range(-x, 0):
+        neighbour = grid[y][x + x_offset]
+        if not is_out_of_bounds(x + x_offset, y):
+            distance_left += 1
+        if is_edge(x + x_offset, y) or neighbour >= tree:
+            break
+
+    distance_right = 0
+    for x_offset in range(1, grid_width-x):
+        neighbour = grid[y][x + x_offset]
+        if not is_out_of_bounds(x + x_offset, y):
+            distance_right += 1
+        if is_edge(x + x_offset, y) or neighbour >= tree:
+            break
+
+    distance_up = 0
+    for y_offset in range(-y, 0):
+        neighbour = grid[y + y_offset][x]
+        if not is_out_of_bounds(x, y + y_offset):
+            distance_up += 1
+        if is_edge(x, y + y_offset) or neighbour >= tree:
+            break
+
+    distance_down = 0
+    for y_offset in range(1, grid_height - y):
+        neighbour = grid[y + y_offset][x]
+        if not is_out_of_bounds(x, y + y_offset):
+            distance_down += 1
+        if is_edge(x, y + y_offset) or neighbour >= tree:
+            break
+
+    return distance_left * distance_right * distance_up * distance_down
+
+
+# Part 1
 total_visible = 0
 for y in range(grid_height):
     for x in range(grid_width):
@@ -57,3 +98,12 @@ for y in range(grid_height):
         if is_visible(tree, x, y):
             total_visible += 1
 print(total_visible)
+
+# Part 2
+scores = []
+for y in range(grid_height):
+    for x in range(grid_width):
+        tree = grid[y][x]
+        scores.append(get_scenic_score(tree, x, y))
+scores.sort(reverse=True)
+print(scores[0])
