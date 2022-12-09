@@ -34,15 +34,11 @@ def move_head(direction: str):
 
 
 def get_displacement(pos_from: list, pos_to: list) -> list:
-    displacement = [0, 0]
-    displacement[0] = pos_to[0] - pos_from[0]
-    displacement[1] = pos_to[1] - pos_from[1]
-    return displacement
+    return [pos_to[0] - pos_from[0], pos_to[1] - pos_from[1]]
 
 
 def get_magnitude(vector: list) -> float:
-    square_sum = (vector[0]**2) + (vector[1]**2)
-    return int(math.sqrt(square_sum))
+    return int(math.sqrt(vector[0]**2 + vector[1]**2))
 
 
 # "knot" follows "leader"
@@ -69,7 +65,7 @@ visited = [HEAD.copy()]
 for move in moves:
     direction = move[0]
     steps = int(move[1])
-    for s in range(steps):
+    for _ in range(steps):
         move_head(direction)
         for k in range(len(KNOTS)):
             knot = KNOTS[k]
