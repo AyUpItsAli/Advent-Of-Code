@@ -29,6 +29,7 @@ operations = read_input()
 CRT_WIDTH = 40
 CRT_HEIGHT = 6
 SPRITE_WIDTH = 3
+BLANK = "X"
 DARK = " "
 LIT = "#"
 
@@ -36,7 +37,7 @@ LIT = "#"
 def setup_crt_screen() -> list:
     screen = []
     for y in range(CRT_HEIGHT):
-        screen.append([None] * CRT_WIDTH)
+        screen.append([BLANK] * CRT_WIDTH)
     return screen
 
 
@@ -65,7 +66,6 @@ def process_next_operation():
     if op[0] == ADDX:
         value = op[1]
         X += value
-    return op
 
 
 def draw_next_pos():
