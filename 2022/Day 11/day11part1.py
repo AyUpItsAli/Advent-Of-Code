@@ -97,5 +97,4 @@ for r in range(num_rounds):
 
 inspections = [m.inspections for m in Monkey.monkeys]
 inspections.sort(reverse=True)
-# Part 1
 print(inspections[0] * inspections[1])
