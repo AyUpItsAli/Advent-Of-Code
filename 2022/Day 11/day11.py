@@ -4,20 +4,27 @@ from typing import Callable
 class Monkey:
     monkeys = []
 
-    def __init__(self, starting_items: list, operation: Callable, test: Callable, success_monkey: int, fail_monkey: int):
+    def __init__(self, starting_items: list, operation: Callable, test_factor: int, success_monkey: int, fail_monkey: int):
         self.items = starting_items
         self.operation = operation
-        self.test = test
+        self.test_factor = test_factor
         self.success_monkey = success_monkey
         self.fail_monkey = fail_monkey
         self.inspections = 0
         Monkey.monkeys.append(self)
+    
+    @staticmethod
+    def create_monkey(starting_items: list, operation: Callable, test_factor: int, success_monkey: int, fail_monkey: int):
+        return Monkey(starting_items, operation, test_factor, success_monkey, fail_monkey)
 
-    def inspect_items(self):
+    def inspect_items(self, common_multiple: int):
         for i in range(len(self.items)):
             item = self.items[i]
-            self.items[i] = self.operation(item)
+            self.items[i] = self.operation(item) % common_multiple
             self.inspections += 1
+
+    def test(self, item) -> bool:
+        return item % self.test_factor == 0
 
     def throw_items(self):
         for item in self.items:
@@ -26,6 +33,12 @@ class Monkey:
             else:
                 Monkey.monkeys[self.fail_monkey].items.append(item)
         self.items = []
+
+
+def apply_relief(monkey: Monkey):
+    for i in range(len(monkey.items)):
+        item = monkey.items[i]
+        monkey.items[i] = int(item / 3)
 
 
 def create_operation(op: list) -> Callable:
@@ -42,12 +55,8 @@ def create_operation(op: list) -> Callable:
     return lambda x: x
 
 
-def create_test(divisor: int) -> Callable:
-    return lambda x: x % divisor == 0
-
-
-def read_input():
-    out = []
+def setup_monkeys():
+    Monkey.monkeys = []
     with open("day11input.txt", "r") as file:
         line = file.readline()
         while line:
@@ -55,7 +64,7 @@ def read_input():
                 line = file.readline()
                 starting_items: list
                 operation: Callable
-                test: Callable
+                test_factor: int
                 success_monkey: int
                 fail_monkey: int
                 while line != "\n" and line != "":
@@ -66,35 +75,40 @@ def read_input():
                         op = line.replace("Operation: new = old ", "").split(" ")
                         operation = create_operation(op)
                     elif line.startswith("Test"):
-                        divisor = int(line.replace("Test: divisible by ", ""))
-                        test = create_test(divisor)
+                        test_factor = int(line.replace("Test: divisible by ", ""))
                         line = file.readline().strip(" ").strip("\n")
                         success_monkey = int(line.replace("If true: throw to monkey ", ""))
                         line = file.readline().strip(" ").strip("\n")
                         fail_monkey = int(line.replace("If false: throw to monkey ", ""))
                     line = file.readline()
-                monkey = Monkey(starting_items.copy(), operation, test, success_monkey, fail_monkey)
+                Monkey.create_monkey(starting_items, operation, test_factor, success_monkey, fail_monkey)
                 line = file.readline()
             else:
                 line = file.readline()
-    return out
 
 
-def apply_relief(monkey: Monkey):
-    for i in range(len(monkey.items)):
-        item = monkey.items[i]
-        monkey.items[i] = int(item / 3)
-
-
-read_input()
-
-num_rounds = 20
-for r in range(num_rounds):
+def get_inspections(num_rounds: int, relief: bool = True):
+    common_multiple = 1
     for monkey in Monkey.monkeys:
-        monkey.inspect_items()
-        apply_relief(monkey)
-        monkey.throw_items()
+        common_multiple *= monkey.test_factor
 
-inspections = [m.inspections for m in Monkey.monkeys]
+    for r in range(num_rounds):
+        for monkey in Monkey.monkeys:
+            monkey.inspect_items(common_multiple)
+            if relief: apply_relief(monkey)
+            monkey.throw_items()
+
+    return [m.inspections for m in Monkey.monkeys]
+
+
+# Part 1
+setup_monkeys()
+inspections = get_inspections(20)  # 20 rounds, with relief.
+inspections.sort(reverse=True)
+print(inspections[0] * inspections[1])
+
+# Part 2
+setup_monkeys()
+inspections = get_inspections(10000, False)  # 10000 rounds. Relief no longer applied.
 inspections.sort(reverse=True)
 print(inspections[0] * inspections[1])
