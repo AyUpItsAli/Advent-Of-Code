@@ -38,8 +38,8 @@ def compare_list(listLeft: list, listRight: list):
 
 
 pairs = read_input()
-sum_indicies = 0
+sum_indices = 0
 for i, pair in enumerate(pairs):
     if compare_list(pair[0], pair[1]):
-        sum_indicies += i + 1
-print(sum_indicies)
+        sum_indices += i + 1
+print(sum_indices)
