@@ -61,7 +61,7 @@ def bubble_sort(packets: list):
 
 
 # Part 2
-packets = [packet for pair in pairs for packet in pair]  # Flattens 2D array of pairs into list of packets
+packets = [packet for pair in pairs for packet in pair]  # Flattens 2D array of pairs into list of individual packets
 packets.extend([  # Add divider packets
     [[2]],
     [[6]]
