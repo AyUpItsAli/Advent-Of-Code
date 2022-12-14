@@ -16,8 +16,8 @@ SAND = "O"
 SAND_START = [500, 0]
 SOLID_TILES = [ROCK, SAND]
 
-# Number of tiles added to the width of the grid.
-# Without this, the sand gets bunched up on the side of the grid, treating it as a solid wall.
+# Number of tiles added to the left and right of the grid.
+# Without this, the sand can get bunched up on the right side of the grid, treating it as a solid wall.
 PADDING = 10
 
 
@@ -38,6 +38,7 @@ def setup_cave():
                 min_x = point[0]
 
     width += PADDING  # Add some padding, to allow the sand to exceed the total width of the rock structures
+    min_x -= PADDING  # Padding added to min_x only effects the draw_cave() function. It has no other function.
 
     out = []
     for y in range(height):
@@ -52,8 +53,11 @@ cave, HEIGHT, WIDTH, MIN_X = setup_cave()
 
 
 def draw_cave():
+    start_x = MIN_X-1
+    if start_x < 0:
+        start_x = 0
     for row in cave:
-        print("".join(row[MIN_X-1:]))
+        print("".join(row[start_x:]))
 
 
 def place_structures():
