@@ -16,6 +16,10 @@ SAND = "O"
 SAND_START = [500, 0]
 SOLID_TILES = [ROCK, SAND]
 
+# Number of tiles added to the width of the grid.
+# Without this, the sand gets bunched up on the side of the grid, treating it as a solid wall.
+PADDING = 10
+
 
 structures = read_input()
 
@@ -32,6 +36,9 @@ def setup_cave():
                 width = point[0] + 1
             if point[0] < min_x:
                 min_x = point[0]
+
+    width += PADDING  # Add some padding, to allow the sand to exceed the total width of the rock structures
+
     out = []
     for y in range(height):
         row = []
@@ -63,68 +70,72 @@ def place_structures():
                 step = 1 if next_point[0] > point[0] else -1
                 for x in range(point[0], next_point[0] + step, step):
                     cave[y][x] = ROCK
+            else:
+                # If we get here, then some structures consist of non-straight lines
+                print("uh oh! Structures contain non-straight lines!")
 
 
-place_structures()
+# List of sand positions that are still moving
+sand_in_motion = []
 
 
-# List of positions for sand that is still moving
-SAND_IN_MOTION = []
-
-
-# Adds new sand at SAND_START pos
-def produce_sand():
-    if SAND_START in SAND_IN_MOTION:  # If start position occupied
+# Adds a new sand tile at SAND_START pos
+def add_sand():
+    if SAND_START in sand_in_motion:  # If start pos occupied, do nothing. Unlikely, but validation makes me happy :)
         return
     cave[SAND_START[1]][SAND_START[0]] = SAND
-    SAND_IN_MOTION.append(SAND_START.copy())
-    draw_cave()
+    sand_in_motion.append(SAND_START.copy())
 
 
 def out_of_bounds(x: int, y: int) -> bool:
     return x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT
 
 
-# Returns the number of sand tiles that have come to rest
+# Returns true if sand in motion is falling into the void
 def move_sand() -> bool:
-    global SAND_IN_MOTION
-    global SOLID_TILES
-    moving_sand_remaining = []  # List of positions for sand that is still moving after this move
-
+    sand_at_rest = []  # List of sand positions that should stop moving
     sand: list
-    for sand in SAND_IN_MOTION:
+    for s, sand in enumerate(sand_in_motion):
         if sand[1] == HEIGHT-1:
+            print(f"{sand} is falling into the void!")
             return True
         old_pos = sand.copy()
-        next_pos = None
-        for pos in [[sand[0], sand[1] + 1], [sand[0] - 1, sand[1] + 1], [sand[0] + 1, sand[1] + 1]]:
+        new_pos = None
+        new_pos_options = [
+            [sand[0], sand[1] + 1],  # Directly down
+            [sand[0] - 1, sand[1] + 1],  # Then try down and to the left
+            [sand[0] + 1, sand[1] + 1]  # Then try down and to the right
+        ]
+        for pos in new_pos_options:
             if out_of_bounds(pos[0], pos[1]):
                 continue
             if cave[pos[1]][pos[0]] in SOLID_TILES:
                 continue
-            next_pos = pos
+            new_pos = pos
             break
-        if next_pos:
-            cave[next_pos[1]][next_pos[0]] = SAND
+        if new_pos:
+            cave[new_pos[1]][new_pos[0]] = SAND
             cave[old_pos[1]][old_pos[0]] = AIR
-            moving_sand_remaining.append(next_pos)
-    SAND_IN_MOTION = moving_sand_remaining
-    draw_cave()
+            sand_in_motion[s] = new_pos
+        else:
+            sand_at_rest.append(sand)
+
+    # Remove sand that has come to rest from the list of sand in motion
+    for sand in sand_at_rest:
+        sand_in_motion.remove(sand)
+
     return False
 
 
+place_structures()
 num_at_rest = 0
-fell_into_abyss = False
-cycle = 0
-for i in range(3):
-    cycle += 1
-    produce_sand()
-    num_moving_before = len(SAND_IN_MOTION)
-    while SAND_IN_MOTION:
-        fell_into_abyss = move_sand()
-        if fell_into_abyss:
-            break
-    num_at_rest += num_moving_before - len(SAND_IN_MOTION)
-
-# 878 is too high
+fallen_into_void = False
+while not fallen_into_void:
+    if sand_in_motion:
+        num_in_motion_before = len(sand_in_motion)
+        fallen_into_void = move_sand()
+        num_at_rest += num_in_motion_before - len(sand_in_motion)
+    else:
+        add_sand()
+draw_cave()
 print(num_at_rest)
