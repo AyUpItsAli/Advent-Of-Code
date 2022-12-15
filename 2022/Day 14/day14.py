@@ -1,3 +1,7 @@
+from yaspin import yaspin
+from yaspin.spinners import Spinners
+
+
 AIR = "."
 ROCK = "#"
 SAND = "o"
@@ -187,7 +191,9 @@ def get_num_sand_at_rest_after_falling_into_void() -> int:
     return num_at_rest
 
 
-print(f"Part 1: {get_num_sand_at_rest_after_falling_into_void()}\n")
+with yaspin(text="[Part 1]", side="right", spinner=Spinners.material, timer=True) as spinner:
+    result = get_num_sand_at_rest_after_falling_into_void()
+    spinner.ok(text=f"Result: {result}")
 
 
 def get_num_sand_at_rest_after_source_blocked() -> int:
@@ -208,4 +214,6 @@ def get_num_sand_at_rest_after_source_blocked() -> int:
     return num_at_rest
 
 
-print(f"Part 2: {get_num_sand_at_rest_after_source_blocked()}")
+with yaspin(text="[Part 2]", side="right", spinner=Spinners.material, timer=True) as spinner:
+    result = get_num_sand_at_rest_after_source_blocked()
+    spinner.ok(text=f"Result: {result}")

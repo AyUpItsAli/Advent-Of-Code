@@ -1,3 +1,7 @@
+from yaspin import yaspin
+from yaspin.spinners import Spinners
+
+
 def read_input():
     out = []
     with open("day12input.txt", "r") as file:
@@ -65,25 +69,23 @@ def get_shortest_distance(start: list, end: list) -> int:
 
 S = [0, 0]
 E = [0, 0]
-for y in range(height):
-    for x in range(width):
-        if height_map[y][x] == "S":
-            S = [x, y]
-        elif height_map[y][x] == "E":
-            E = [x, y]
+with yaspin(text="[Part 1]", side="right", spinner=Spinners.material, timer=True) as spinner:
+    for y in range(height):
+        for x in range(width):
+            if height_map[y][x] == "S":
+                S = [x, y]
+            elif height_map[y][x] == "E":
+                E = [x, y]
+    distance = get_shortest_distance(S, E)
+    spinner.ok(text=f"Result: {distance}")
 
-# Part 1
-distance = get_shortest_distance(S, E)
-print("Part 1: {}".format(distance))
 
-# Part 2
-for y in range(height):
-    print("Row {}/{} ...".format(y+1, height))  # Show progress, as very slow (could be way more efficient probably)
-    for x in range(width):
-        if height_map[y][x] != "S" and height_map[y][x] == "a":
-            pos = [x, y]
-            new_distance = get_shortest_distance(pos, E)
-            if new_distance != -1 and new_distance < distance:
-                distance = new_distance
-                print("Found shorter distance ({}) at {}".format(distance, pos))
-print("Part 2: {}".format(distance))
+with yaspin(text="[Part 2]", side="right", spinner=Spinners.material, timer=True) as spinner:
+    for y in range(height):
+        for x in range(width):
+            if height_map[y][x] != "S" and height_map[y][x] == "a":
+                pos = [x, y]
+                new_distance = get_shortest_distance(pos, E)
+                if new_distance != -1 and new_distance < distance:
+                    distance = new_distance
+    spinner.ok(text=f"Result: {distance}")
