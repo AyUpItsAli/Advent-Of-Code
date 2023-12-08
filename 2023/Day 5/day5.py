@@ -28,8 +28,44 @@ def part_1(input_path: str):
                     result += offset
                     break
         results.append(result)
-    sorted_results = sorted(results)
-    print(sorted_results[0])
+    print(min(results))
+
+
+def part_2(input_path: str):
+    seeds, maps = read_input(input_path)
+    input_ranges = [[seeds[i], seeds[i]+seeds[i+1]-1] for i in range(0, len(seeds), 2)]
+
+    for m in maps:
+        next_input_ranges = []
+        while input_ranges:
+            input_range = input_ranges.pop()
+            i_start = input_range[0]
+            i_end = input_range[1]
+            for map_range in m:
+                m_start = map_range[1]
+                m_end = map_range[1] + map_range[2] - 1
+                if m_start <= i_end and m_end >= i_start:
+                    # Overlap range
+                    overlap_range = [max(m_start, i_start), min(m_end, i_end)]
+                    o_start = overlap_range[0]
+                    o_end = overlap_range[1]
+
+                    # Apply offset to Overlap range
+                    offset = map_range[0] - m_start
+                    next_input_ranges.append([o_start + offset, o_end + offset])
+
+                    # Feed Underflow and Overflow ranges back in as input ranges
+                    if o_start > i_start:
+                        input_ranges.append([i_start, o_start-1])
+                    if o_end < i_end:
+                        input_ranges.append([o_end+1, i_end])
+                    break
+            else:
+                # If no overlaps found, append entire input range
+                next_input_ranges.append(input_range)
+        input_ranges = next_input_ranges
+    print(min(input_ranges)[0])
 
 
 part_1("input.txt")
+part_2("input.txt")
